@@ -1,0 +1,261 @@
+{
+  "name": "NewsIndex",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        -320
+      ],
+      "id": "361a9373-f4f8-4d8c-8510-8bebd7f309b9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://news.yahoo.com/rss/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        -320
+      ],
+      "id": "2c2969a5-b0ed-4e5f-aea3-27b9e73012e9",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 遍历所有输入 items\nfor (const item of $input.all()) {\n  // 生成 Qdrant 所需字段\n  item.json.id = item.json.link;  // Qdrant 的唯一 ID\n  item.json.text = item.json.title + \" \" + item.json.contentSnippet; // 用于 embedding\n  item.json.title = item.json.title;\n  item.json.summary = item.json.contentSnippet;\n  item.json.link = item.json.link;\n  item.json.published = item.json.pubDate;\n}\n\n// 返回修改后的 items\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -320
+      ],
+      "id": "defee80d-ee08-4682-a544-513c57043f10",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        -112
+      ],
+      "id": "03ea8cc3-7d57-4988-b11a-cc7312e418a6",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "suEdPHuC2TRjhQRH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "yahoo_v2",
+          "mode": "list",
+          "cachedResultName": "yahoo_v2"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        816,
+        -320
+      ],
+      "id": "96c5c332-30a3-4ee1-8b1e-be1ffe3c67ad",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "NKhtbSYMzmUYFNQc",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Code').item.json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        -112
+      ],
+      "id": "348d8fae-0106-40d1-bd43-dd44be9538ca",
+      "name": "Default Data Loader"
+    }
+  ],
+  "pinData": {
+    "RSS Read": [
+      {
+        "json": {
+          "title": "Eat cruciferous vegetables, stand on one leg and use less toothpaste — plus 7 more health tips to help you have a great week",
+          "link": "https://www.yahoo.com/lifestyle/article/eat-cruciferous-vegetables-stand-on-one-leg-and-use-less-toothpaste--plus-7-more-health-tips-to-help-you-have-a-great-week-090002349.html",
+          "pubDate": "2025-08-31T09:00:02Z",
+          "guid": "eat-cruciferous-vegetables-stand-on-one-leg-and-use-less-toothpaste--plus-7-more-health-tips-to-help-you-have-a-great-week-090002349.html",
+          "isoDate": "2025-08-31T09:00:02.000Z"
+        }
+      },
+      {
+        "json": {
+          "title": "President Trump's Assistant Grabs Attention With Her Golf Course Outfit",
+          "link": "https://www.yahoo.com/entertainment/celebrity/articles/president-trumps-assistant-grabs-attention-175002768.html",
+          "pubDate": "2025-09-01T17:50:02Z",
+          "guid": "president-trumps-assistant-grabs-attention-175002768.html",
+          "isoDate": "2025-09-01T17:50:02.000Z"
+        }
+      }
+    ],
+    "Code": [
+      {
+        "json": {
+          "title": "Eat cruciferous vegetables, stand on one leg and use less toothpaste — plus 7 more health tips to help you have a great week",
+          "link": "https://www.yahoo.com/lifestyle/article/eat-cruciferous-vegetables-stand-on-one-leg-and-use-less-toothpaste--plus-7-more-health-tips-to-help-you-have-a-great-week-090002349.html",
+          "pubDate": "2025-08-31T09:00:02Z",
+          "guid": "eat-cruciferous-vegetables-stand-on-one-leg-and-use-less-toothpaste--plus-7-more-health-tips-to-help-you-have-a-great-week-090002349.html",
+          "isoDate": "2025-08-31T09:00:02.000Z",
+          "id": "https://www.yahoo.com/lifestyle/article/eat-cruciferous-vegetables-stand-on-one-leg-and-use-less-toothpaste--plus-7-more-health-tips-to-help-you-have-a-great-week-090002349.html",
+          "text": "Eat cruciferous vegetables, stand on one leg and use less toothpaste — plus 7 more health tips to help you have a great week undefined",
+          "published": "2025-08-31T09:00:02Z"
+        }
+      },
+      {
+        "json": {
+          "title": "President Trump's Assistant Grabs Attention With Her Golf Course Outfit",
+          "link": "https://www.yahoo.com/entertainment/celebrity/articles/president-trumps-assistant-grabs-attention-175002768.html",
+          "pubDate": "2025-09-01T17:50:02Z",
+          "guid": "president-trumps-assistant-grabs-attention-175002768.html",
+          "isoDate": "2025-09-01T17:50:02.000Z",
+          "id": "https://www.yahoo.com/entertainment/celebrity/articles/president-trumps-assistant-grabs-attention-175002768.html",
+          "text": "President Trump's Assistant Grabs Attention With Her Golf Course Outfit undefined",
+          "published": "2025-09-01T17:50:02Z"
+        }
+      }
+    ],
+    "Qdrant Vector Store": [
+      {
+        "json": {
+          "metadata": {
+            "source": "blob",
+            "blobType": "text/plain",
+            "loc": {
+              "lines": {
+                "from": 1,
+                "to": 1
+              }
+            }
+          },
+          "pageContent": "Eat cruciferous vegetables, stand on one leg and use less toothpaste — plus 7 more health tips to help you have a great week undefined"
+        }
+      },
+      {
+        "json": {
+          "metadata": {
+            "source": "blob",
+            "blobType": "text/plain",
+            "loc": {
+              "lines": {
+                "from": 1,
+                "to": 1
+              }
+            }
+          },
+          "pageContent": "President Trump's Assistant Grabs Attention With Her Golf Course Outfit undefined"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0707a1e3-71be-4cb5-bea0-636fe2fd61c3",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a3b17f04b5bd1fe247ea910cbc39f92134868172684301b60247f55fdab64baf"
+  },
+  "id": "4Xn1to2cwtfXFpzJ",
+  "tags": []
+}
